@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>字体宝</title>
+<style>
+:root{--p:#FFC0CB;--t:#222}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;font:14px/1.5 -apple-system,"Segoe UI",sans-serif;color:#222;background:color-mix(in srgb,var(--p) 14%,#fff);padding-bottom:72px}
+header{position:sticky;top:0;z-index:5;background:var(--p);color:var(--t);padding:8px 10px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;box-shadow:0 2px 6px #0002}
+header b{font-size:16px;margin-right:4px}
+button{font:inherit;padding:5px 12px;border:1px solid var(--p);background:var(--p);color:var(--t);border-radius:18px;cursor:pointer}
+button.o{background:#fff;color:#444}
+nav button{background:transparent;color:var(--t);border-color:transparent}nav button.a{background:#fff7;border-color:var(--t)}
+input[type=number],select{font:inherit;padding:3px 6px;border:1px solid #bbb;border-radius:8px;width:64px}input[type=text]{font:inherit;padding:3px 6px;border:1px solid #bbb;border-radius:8px;width:110px}
+section{margin:10px}.card{background:#fff;border-radius:12px;padding:10px 12px;margin-bottom:10px;box-shadow:0 1px 4px #0001}
+.row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+dl{margin:6px 0 0;display:grid;grid-template-columns:max-content 1fr;gap:2px 10px}dt{color:#777}dd{margin:0;word-break:break-all}
+#wrap{overflow:auto;background:#fff;border-radius:12px}
+#grid{display:grid;grid-auto-flow:column}
+.c{display:flex;align-items:center;gap:8px;padding:0 8px;border-bottom:1px solid #eee;border-right:1px solid #eee;cursor:pointer;position:relative;overflow:hidden}
+.c:hover{background:color-mix(in srgb,var(--p) 20%,#fff)}.c.s{background:color-mix(in srgb,var(--p) 60%,#fff);outline:2px solid var(--p);outline-offset:-2px}
+.c b{position:absolute;right:4px;top:0;color:#e8a000;font-size:12px}
+.g{width:40px;text-align:center;font-size:26px;font-style:normal;line-height:1;flex:none;overflow:hidden}
+.t{font:11px/1.3 monospace;color:#555;white-space:nowrap;overflow:hidden}
+.fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));grid-auto-rows:48px;background:#fff;border-radius:12px;overflow:hidden}
+.r{display:flex;gap:6px;align-items:center;padding:8px 0;border-bottom:1px solid #eee}.r>div{flex:1;min-width:0}.r small{display:block;color:#777;word-break:break-all}
+.m{color:#888}h4{margin:8px 0 6px}
+.sw{width:30px;height:30px;padding:0;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #aaa}
+#sb{position:fixed;left:0;right:0;bottom:0;z-index:6;background:#fff;border-top:2px solid var(--p);padding:8px 10px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+#toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);z-index:20;background:#222;color:#fff;padding:8px 14px;border-radius:8px;max-width:90%;text-align:center}
+#ov{position:fixed;inset:0;z-index:30;background:#000d;color:#fff;flex-direction:column;align-items:center;gap:8px;padding:16px;overflow:auto;display:flex}
+#ov img{max-width:100%;background:#fff}#ov p{margin:0;color:#ccc}
+#msg{color:#c33;margin:6px 12px}
+</style></head><body>
+<header><b>字体宝</b><nav class="row"><button data-v="browse" class="a">浏览</button><button data-v="fav">收藏</button><button data-v="hist">历史</button><button data-v="set">设置</button></nav></header>
+<div id="msg"></div>
+<section id="v-browse">
+ <div class="card row"><button id="add">添加字体</button><input type="file" id="file" accept="*/*" hidden><span id="fn" class="m">选择 ttf / otf / ttc 文件</span></div>
+ <div class="card" id="info" hidden><div class="row"><b>字体信息</b><button id="fbtn" class="o"></button><button id="sfont" class="o">分享字体文件</button></div><dl id="idl"></dl></div>
+ <div class="card" id="tools" hidden>
+  <div class="row">每页 <input type="number" id="cols" min="1" max="20"> 列 × <input type="number" id="rows" min="1" max="1000"> 行 <button class="o" id="rdef">恢复4×250</button></div>
+  <div class="row" style="margin-top:6px"><button class="o" id="prev">上一页</button><span id="pg"></span><button class="o" id="next">下一页</button><input type="number" id="jmp" placeholder="页"><button class="o" id="go">跳转</button></div>
+  <div class="row" style="margin-top:6px"><button id="selP">全选本页</button><button class="o" id="unP">取消本页</button><input type="text" id="rng" placeholder="页码如 1-3,5"><button id="selR">选这些页</button></div>
+ </div>
+ <div id="wrap" hidden><div id="grid"></div></div>
+</section>
+<section id="v-fav" hidden><div class="card"><h4>收藏的字体</h4><div id="ff"></div></div><h4>收藏的文字（点选后用底部按钮操作）</h4><div class="fg" id="fc"></div></section>
+<section id="v-hist" hidden><div class="card"><div class="row"><b>使用历史</b><button class="o" id="hclr">清空</button></div><div id="hl"></div></div></section>
+<section id="v-set" hidden><div class="card"><h4>界面颜色</h4><div class="row"><input type="color" id="cc"> <span id="sws" class="row"></span><button class="o" id="cdef">恢复 #FFC0CB</button></div></div>
+ <div class="card"><h4>单字 PNG</h4><div class="row">尺寸 <select id="sz"><option>128</option><option>256</option><option>512</option><option>1024</option></select> px <label><input type="checkbox" id="tp"> 透明背景</label></div></div></section>
+<div id="sb" hidden><b id="sn"></b><button id="b1"></button><button id="b2"></button><button id="b3" class="o">分享PNG</button><button id="b4" class="o">收藏文字</button><button id="b5" class="o">取消收藏</button><button id="b6" class="o">清空</button></div>
+<div id="toast" hidden></div>
+<div id="ov" hidden><div><span id="ovn"></span> <button id="ovs">分享</button> <button class="o" id="ovc">关闭</button></div><p>长按图片，选择「保存图片」</p><img alt=""></div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const DEF={c:'#FFC0CB',cols:4,rows:250,size:256,tp:false};
+let st={...DEF,...JSON.parse(localStorage.getItem('st')||'{}')};
+const sv=()=>localStorage.setItem('st',JSON.stringify(st));
+const hex=(n,l=4)=>n.toString(16).toUpperCase().padStart(l,'0'),uP=c=>'U+'+hex(c,c>0xFFFF?5:4);
+const an=c=>c<0x10000?'\\u'+hex(c):'\\u'+hex(0xD800+((c-0x10000)>>10))+'\\u'+hex(0xDC00+((c-0x10000)&0x3FF));
+const hid=s=>{let h=5381;for(const c of s)h=((h*33)^c.charCodeAt(0))>>>0;return h.toString(36)};
+const esc=s=>String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+const M={},S=new Map(),FAV=new Set();let cur=null,page=0,view='browse',tT;
+function toast(h){const t=$('#toast');t.innerHTML=h;t.hidden=false;clearTimeout(tT);tT=setTimeout(()=>t.hidden=true,6000)}
+function theme(c){st.c=c;sv();const r=document.documentElement.style,n=parseInt(c.slice(1),16),l=((n>>16)*299+((n>>8&255)*587)+(n&255)*114)/1000;r.setProperty('--p',c);r.setProperty('--t',l>150?'#222':'#fff');$('#cc').value=c}
+// ---- IndexedDB
+const db=new Promise((res,rej)=>{const r=indexedDB.open('ttfv',1);r.onupgradeneeded=()=>{r.result.createObjectStore('fonts',{keyPath:'id'});r.result.createObjectStore('chars',{keyPath:'k'})};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+const tx=async(s,m,f)=>{const d=await db;return new Promise((res,rej)=>{const t=d.transaction(s,m),q=f(t.objectStore(s));t.oncomplete=()=>res(q&&q.result);t.onerror=()=>rej(t.error)})};
+const put=(s,v)=>tx(s,'readwrite',o=>o.put(v)),get=(s,k)=>tx(s,'readonly',o=>o.get(k)),all=s=>tx(s,'readonly',o=>o.getAll()),del=(s,k)=>tx(s,'readwrite',o=>o.delete(k));
+const slim=i=>({...i,codes:null});
+// ---- font parse
+function parseFont(buf){
+  const dv=new DataView(buf),tag=o=>String.fromCharCode(dv.getUint8(o),dv.getUint8(o+1),dv.getUint8(o+2),dv.getUint8(o+3));
+  let off=0;const sig=tag(0);if(sig==='ttcf')off=dv.getUint32(12);
+  const n=dv.getUint16(off+4),T={};
+  for(let i=0;i<n;i++){const p=off+12+i*16;T[tag(p)]={o:dv.getUint32(p+8)}}
+  if(!T.cmap)throw new Error('不是有效字体（缺少 cmap）');
+  const info={fmt:sig==='OTTO'?'OpenType(CFF)':sig==='ttcf'?'TTC':'TrueType',tables:Object.keys(T),names:{}};
+  if(T.head)info.upm=dv.getUint16(T.head.o+18);
+  if(T.maxp)info.glyphs=dv.getUint16(T.maxp.o+4);
+  if(T.name){const o=T.name.o,cnt=dv.getUint16(o+2),so=o+dv.getUint16(o+4),b={};
+    for(let i=0;i<cnt;i++){const p=o+6+i*12,pl=dv.getUint16(p),lg=dv.getUint16(p+4),id=dv.getUint16(p+6),l=dv.getUint16(p+8),of=so+dv.getUint16(p+10),sc=pl===3?(lg===0x409?3:2):pl===0?2:1;
+      if(b[id]&&b[id].sc>=sc)continue;let s='';
+      if(pl===1)for(let k=0;k<l;k++)s+=String.fromCharCode(dv.getUint8(of+k));else for(let k=0;k<l;k+=2)s+=String.fromCharCode(dv.getUint16(of+k));
+      b[id]={sc,s}}
+    for(const k in b)info.names[k]=b[k].s}
+  const co=T.cmap.o,nt=dv.getUint16(co+2),set=new Set(),u16=o=>dv.getUint16(o);
+  const add=c=>{if(c>=0x20&&!(c>=0x7F&&c<=0x9F)&&!(c>=0xD800&&c<=0xDFFF)&&c<=0x10FFFF)set.add(c)};
+  for(let i=0;i<nt;i++){const p=co+4+i*8,pl=u16(p);if(pl!==0&&pl!==3)continue;const s=co+dv.getUint32(p+4),f=u16(s);
+    if(f===4){const sx=u16(s+6),n2=sx/2,eO=s+14,stO=eO+sx+2,dO=stO+sx,rO=dO+sx;
+      for(let k=0;k<n2;k++){const e=u16(eO+2*k),a=u16(stO+2*k),d=u16(dO+2*k),ro=u16(rO+2*k);
+        for(let c=a;c<=e&&c<0xFFFF;c++){let g;if(ro===0)g=(c+d)&0xFFFF;else{const q=rO+2*k+ro+2*(c-a);if(q+2>dv.byteLength)continue;g=u16(q);if(g)g=(g+d)&0xFFFF}if(g)add(c)}}}
+    else if(f===12){const ng=dv.getUint32(s+12);for(let k=0;k<ng;k++){const q=s+16+k*12,a=dv.getUint32(q),e=dv.getUint32(q+4),g=dv.getUint32(q+8);for(let c=a;c<=e&&c<=0x10FFFF;c++)if(g+(c-a)!==0)add(c)}}
+    else if(f===6){const a=u16(s+6),c=u16(s+8);for(let k=0;k<c;k++)if(u16(s+10+2*k))add(a+k)}
+    else if(f===0){for(let k=0;k<256;k++)if(dv.getUint8(s+6+k))add(k)}}
+  info.codes=[...set].sort((a,b)=>a-b);if(!info.codes.length)throw new Error('未找到可显示的字符');return info}
+// ---- open font
+async function mkFace(id,buf){const fam='F'+id,f=new FontFace(fam,buf);await f.load();document.fonts.add(f);return fam}
+async function openFont(buf,file,size){
+  const info=parseFont(buf),id=hid(file+'|'+size);let m=M[id];
+  if(!m){m=M[id]={id,fam:await mkFace(id,buf),buf,file,size,name:file.replace(/\.[^.]+$/,'')}}
+  m.info=info;m.codes=info.codes;const r=await get('fonts',id);m.fav=!!(r&&r.fav);cur=m;page=0;
+  const h=JSON.parse(localStorage.getItem('hist')||'[]').filter(x=>x.id!==id);
+  h.unshift({id,file,size,full:info.names[4]||info.names[1]||'',fmt:info.fmt,glyphs:info.glyphs,chars:info.codes.length,time:Date.now()});
+  localStorage.setItem('hist',JSON.stringify(h.slice(0,100)));show('browse');drawInfo();render()}
+async function ensureFace(fid){if(M[fid])return true;const r=await get('fonts',fid);if(!r)return false;M[fid]={id:fid,fam:await mkFace(fid,r.buf),buf:r.buf,file:r.file,size:r.size,info:r.info,name:r.file.replace(/\.[^.]+$/,'')};return true}
+async function openDb(id){const r=await get('fonts',id);if(!r)return false;await openFont(r.buf,r.file,r.size);return true}
+$('#add').onclick=()=>$('#file').click();
+$('#file').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;$('#msg').textContent='';
+  if(!/\.(ttf|otf|ttc)$/i.test(f.name)){$('#msg').textContent='请选择 .ttf / .otf / .ttc 文件';return}
+  try{await openFont(await f.arrayBuffer(),f.name,f.size)}catch(err){$('#msg').textContent='解析失败：'+err.message}};
+function drawInfo(){const i=cur.info,N=i.names,rows=[['字体家族',N[1]],['样式',N[2]],['完整名称',N[4]],['PostScript',N[6]],['版本',N[5]],['版权',N[0]],['厂商',N[8]],['设计师',N[9]],['格式',i.fmt],['文件大小',(cur.size/1024).toFixed(1)+' KB'],['字形数',i.glyphs],['字符数',i.codes.length],['范围',uP(i.codes[0])+' ~ '+uP(i.codes.at(-1))],['表',i.tables.join(', ')]];
+  $('#info').hidden=false;$('#tools').hidden=false;$('#fn').textContent=cur.file;$('#fbtn').textContent=cur.fav?'★ 已收藏字体':'☆ 收藏字体';
+  $('#idl').innerHTML=rows.filter(r=>r[1]).map(r=>`<dt>${r[0]}</dt><dd>${esc(r[1])}</dd>`).join('')}
+$('#fbtn').onclick=async()=>{const id=cur.id,r=await get('fonts',id);
+  if(r&&r.fav){const used=(await all('chars')).some(c=>c.fid===id);used?await put('fonts',{...r,fav:false}):await del('fonts',id);cur.fav=false}
+  else{await put('fonts',{id,file:cur.file,size:cur.size,buf:cur.buf,info:slim(cur.info),fav:true});cur.fav=true}
+  drawInfo();toast(cur.fav?'已收藏字体':'已取消收藏')};
+// ---- grid
+function render(){if(!cur)return;const C=st.cols,R=st.rows,P=C*R,tp=Math.ceil(cur.codes.length/P);if(page>=tp)page=tp-1;
+  $('#cols').value=C;$('#rows').value=R;$('#wrap').hidden=false;const g=$('#grid');
+  g.style.gridTemplateColumns=`repeat(${C},minmax(210px,1fr))`;g.style.gridTemplateRows=`repeat(${R},42px)`;g.style.minWidth=C*210+'px';
+  g.innerHTML=cur.codes.slice(page*P,page*P+P).map(c=>{const k=cur.id+':'+c;return`<div class="c${S.has(k)?' s':''}" data-k="${k}"><i class="g" style="font-family:'${cur.fam}'">&#${c};</i><span class="t">${uP(c)}<br>${an(c)}</span>${FAV.has(k)?'<b>★</b>':''}</div>`}).join('');
+  $('#pg').textContent=`${page+1}/${tp} 页 · ${cur.codes.length} 字`;$('#prev').disabled=!page;$('#next').disabled=page>=tp-1;bar()}
+$('#prev').onclick=()=>{page--;render();scrollTo(0,0)};$('#next').onclick=()=>{page++;render();scrollTo(0,0)};
+$('#go').onclick=()=>{const v=+$('#jmp').value,tp=Math.ceil(cur.codes.length/(st.cols*st.rows));if(v>=1&&v<=tp){page=v-1;render()}};
+function setLay(){st.cols=Math.min(20,Math.max(1,+$('#cols').value||4));st.rows=Math.min(1000,Math.max(1,+$('#rows').value||250));sv();page=0;render()}
+$('#cols').onchange=$('#rows').onchange=setLay;$('#rdef').onclick=()=>{st.cols=4;st.rows=250;sv();page=0;render()};
+function selPage(p,on){const P=st.cols*st.rows;for(const c of cur.codes.slice(p*P,p*P+P)){const k=cur.id+':'+c;on?S.set(k,{fid:cur.id,cp:c}):S.delete(k)}}
+$('#selP').onclick=()=>{selPage(page,1);render()};$('#unP').onclick=()=>{selPage(page,0);render()};
+$('#selR').onclick=()=>{const tp=Math.ceil(cur.codes.length/(st.cols*st.rows));let n=0;
+  for(const s of $('#rng').value.split(/[,，\s]+/)){const m=s.match(/^(\d+)(?:-(\d+))?$/);if(!m)continue;const a=+m[1],b=+(m[2]||m[1]);for(let p=a;p<=b&&p<=tp;p++)if(p>=1){selPage(p-1,1);n++}}
+  toast(n?`已选 ${n} 页`:'页码格式如 1-3,5');render()};
+document.addEventListener('click',e=>{const c=e.target.closest('.c[data-k]');if(!c)return;const k=c.dataset.k;
+  if(S.has(k))S.delete(k);else{const[i,p]=k.split(':');S.set(k,{fid:i,cp:+p})}c.classList.toggle('s');bar()});
+function bar(){const n=S.size;$('#sb').hidden=!n;$('#sn').textContent='已选 '+n;$('#b1').textContent=`单独保存(${n}张)`;$('#b2').textContent=`批量保存(${Math.ceil(n/(st.cols*st.rows))}张)`}
+// ---- drawing / saving
+const toB=cv=>new Promise(r=>cv.toBlob(r,'image/png')),b2u=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b)});
+function glyphCv(it){const m=M[it.fid],s=+st.size,ch=String.fromCodePoint(it.cp),cv=document.createElement('canvas');cv.width=cv.height=s;const x=cv.getContext('2d');
+  if(!st.tp){x.fillStyle='#fff';x.fillRect(0,0,s,s)}let fs=s*.7,t;const set=()=>{x.font=`${fs}px "${m.fam}"`;t=x.measureText(ch)},W=()=>t.actualBoundingBoxLeft+t.actualBoundingBoxRight,H=()=>t.actualBoundingBoxAscent+t.actualBoundingBoxDescent;
+  set();const k=Math.max(W(),H())/(s*.9);if(k>1){fs/=k;set()}x.fillStyle='#000';x.textAlign='left';x.textBaseline='alphabetic';
+  if(W()>0)x.fillText(ch,(s-W())/2+t.actualBoundingBoxLeft,(s-H())/2+t.actualBoundingBoxAscent);else x.fillText(ch,(s-t.width)/2,s*.7);return cv}
+function sheetCv(its){const R=st.rows,w=240,h=40,rr=Math.min(R,its.length),cv=document.createElement('canvas');cv.width=Math.ceil(its.length/R)*w;cv.height=rr*h;const x=cv.getContext('2d');
+  x.fillStyle='#fff';x.fillRect(0,0,cv.width,cv.height);x.strokeStyle='#ddd';x.textBaseline='middle';
+  its.forEach((it,k)=>{const cx=Math.floor(k/R)*w,cy=(k%R)*h;x.strokeRect(cx+.5,cy+.5,w,h);x.fillStyle='#000';x.font=`26px "${M[it.fid].fam}"`;x.textAlign='center';x.fillText(String.fromCodePoint(it.cp),cx+30,cy+h/2+1);
+    x.fillStyle='#555';x.font='12px monospace';x.textAlign='left';x.fillText(uP(it.cp),cx+62,cy+14);x.fillText(an(it.cp),cx+62,cy+29)});return cv}
+const items=()=>[...S.values()].sort((a,b)=>a.fid<b.fid?-1:a.fid>b.fid?1:a.cp-b.cp);
+const pfx=its=>its.every(i=>i.fid===its[0].fid)?M[its[0].fid].name:'mix';
+async function mkEach(its){const fs=[];for(let i=0;i<its.length;i++){toast(`生成 ${i+1}/${its.length}`);fs.push({name:`${M[its[i].fid].name}_${uP(its[i].cp)}.png`,blob:await toB(glyphCv(its[i])),type:'image/png'});await new Promise(r=>setTimeout(r))}return fs}
+async function mkSheets(its){const P=st.cols*st.rows,fs=[],p=pfx(its);for(let i=0;i*P<its.length;i++){toast(`生成 ${i+1}/${Math.ceil(its.length/P)}`);fs.push({name:`${p}_sheet${i+1}.png`,blob:await toB(sheetCv(its.slice(i*P,i*P+P))),type:'image/png'});await new Promise(r=>setTimeout(r))}return fs}
+async function saveBlob(blob,name){
+  if(window.Android&&Android.savePng&&blob.type==='image/png'){toast(Android.savePng(await b2u(blob),name));return}
+  if(window.showSaveFilePicker){try{const h=await showSaveFilePicker({suggestedName:name});const w=await h.createWritable();await w.write(blob);await w.close();toast('已保存：'+h.name);return}catch(e){if(e.name==='AbortError')return}}
+  if(blob.type==='image/png'){preview(blob,await b2u(blob),name);return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();toast('已触发下载：'+name)}
+async function zip(fs){const enc=new TextEncoder(),parts=[],cen=[];let off=0,cs=0;
+  const T=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;T[n]=c>>>0}
+  for(const f of fs){const nm=enc.encode(f.name),d=new Uint8Array(await f.blob.arrayBuffer());let c=-1;for(const x of d)c=T[(c^x)&255]^(c>>>8);c=(~c)>>>0;
+    const h=new DataView(new ArrayBuffer(30));h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x800,true);h.setUint32(14,c,true);h.setUint32(18,d.length,true);h.setUint32(22,d.length,true);h.setUint16(26,nm.length,true);parts.push(h.buffer,nm,d);
+    const e=new DataView(new ArrayBuffer(46));e.setUint32(0,0x02014b50,true);e.setUint16(4,20,true);e.setUint16(6,20,true);e.setUint16(8,0x800,true);e.setUint32(16,c,true);e.setUint32(20,d.length,true);e.setUint32(24,d.length,true);e.setUint16(28,nm.length,true);e.setUint32(42,off,true);cen.push(e.buffer,nm);cs+=46+nm.length;off+=30+nm.length+d.length}
+  const z=new DataView(new ArrayBuffer(22));z.setUint32(0,0x06054b50,true);z.setUint16(8,fs.length,true);z.setUint16(10,fs.length,true);z.setUint32(12,cs,true);z.setUint32(16,off,true);return new Blob([...parts,...cen,z.buffer],{type:'application/zip'})}
+async function saveFiles(fs){const n=fs.length;
+  if(window.Android&&Android.savePng){for(let i=0;i<n;i++){toast(`保存中 ${i+1}/${n}`);Android.savePng(await b2u(fs[i].blob),fs[i].name);await new Promise(r=>setTimeout(r))}toast(`已保存 ${n} 张到相册 Pictures/TTFViewer`);return}
+  if(n===1)return saveBlob(fs[0].blob,fs[0].name);
+  if(window.showDirectoryPicker){try{const d=await showDirectoryPicker({mode:'readwrite'});for(const f of fs){const h=await d.getFileHandle(f.name,{create:true}),w=await h.createWritable();await w.write(f.blob);await w.close()}toast(`已保存 ${n} 张`);return}catch(e){if(e.name==='AbortError')return}}
+  toast('打包中…');await saveBlob(await zip(fs),'ttf_png.zip')}
+async function share(fs){
+  if(window.Android&&Android.shareAdd){Android.shareReset();for(const f of fs)Android.shareAdd(await b2u(f.blob),f.name,f.type);Android.shareEnd();return}
+  const fl=fs.map(f=>new File([f.blob],f.name,{type:f.type}));
+  if(navigator.canShare&&navigator.canShare({files:fl})){try{await navigator.share({files:fl})}catch(e){}return}
+  toast('当前环境不支持系统分享，已改为保存');await saveFiles(fs)}
+async function shareFont(id){const r=M[id]&&M[id].buf?M[id]:await get('fonts',id);if(!r)return;await share([{name:r.file,blob:new Blob([r.buf],{type:'application/octet-stream'}),type:'application/octet-stream'}])}
+$('#sfont').onclick=()=>shareFont(cur.id);
+$('#b1').onclick=async()=>saveFiles(await mkEach(items()));
+$('#b2').onclick=async()=>saveFiles(await mkSheets(items()));
+$('#b3').onclick=async()=>{const its=items();await share(its.length<=9?await mkEach(its):await mkSheets(its))};
+$('#b4').onclick=async()=>{let n=0;for(const it of items()){const k=it.fid+':'+it.cp;if(FAV.has(k))continue;const m=M[it.fid];
+  if(!await get('fonts',it.fid))await put('fonts',{id:it.fid,file:m.file,size:m.size,buf:m.buf,info:slim(m.info),fav:false});
+  await put('chars',{k,fid:it.fid,cp:it.cp});FAV.add(k);n++}toast(`已收藏 ${n} 个文字（含字体文件）`);refresh()};
+$('#b5').onclick=async()=>{let n=0;for(const k of [...S.keys()])if(FAV.has(k)){await del('chars',k);FAV.delete(k);S.delete(k);n++}toast(`已取消收藏 ${n} 个`);refresh();bar()};
+$('#b6').onclick=()=>{S.clear();refresh();bar()};
+function preview(blob,url,name){$('#ov img').src=url;$('#ovn').textContent=name;$('#ov').hidden=false;$('#ovs').onclick=()=>share([{name,blob,type:'image/png'}])}
+$('#ovc').onclick=()=>$('#ov').hidden=true;
+// ---- views
+function refresh(){if(view==='browse')render();else if(view==='fav')renderFav()}
+function show(v){view=v;$$('section').forEach(s=>s.hidden=s.id!=='v-'+v);$$('nav button').forEach(b=>b.classList.toggle('a',b.dataset.v===v));if(v==='fav')renderFav();if(v==='hist')renderHist();if(v==='browse')render()}
+$$('nav button').forEach(b=>b.onclick=()=>show(b.dataset.v));
+async function renderFav(){const fs=(await all('fonts')).filter(f=>f.fav),cs=await all('chars');
+  $('#ff').innerHTML=fs.length?fs.map(f=>`<div class="r"><div><b>${esc(f.file)}</b><small>${(f.size/1024).toFixed(0)} KB · ${f.info.fmt||''} · ${f.info.glyphs||'?'} 字形</small></div><button data-a="open" data-id="${f.id}">打开</button><button class="o" data-a="sf" data-id="${f.id}">分享</button><button class="o" data-a="df" data-id="${f.id}">删除</button></div>`).join(''):'<p class="m">暂无收藏的字体</p>';
+  for(const c of cs)await ensureFace(c.fid);
+  $('#fc').innerHTML=cs.filter(c=>M[c.fid]).map(c=>`<div class="c${S.has(c.k)?' s':''}" data-k="${c.k}"><i class="g" style="font-family:'${M[c.fid].fam}'">&#${c.cp};</i><span class="t">${uP(c.cp)}<br>${esc(M[c.fid].name)}</span></div>`).join('')||'<p class="m" style="padding:10px">暂无收藏的文字</p>'}
+function renderHist(){const h=JSON.parse(localStorage.getItem('hist')||'[]');
+  $('#hl').innerHTML=h.length?h.map(x=>`<div class="r"><div><b>${esc(x.full||x.file)}</b><small>${esc(x.file)} · ${(x.size/1024).toFixed(0)} KB · ${x.fmt} · ${x.glyphs||'?'} 字形 · ${x.chars} 字 · ${new Date(x.time).toLocaleString()}</small></div><button data-a="ho" data-id="${x.id}" data-f="${esc(x.file)}">打开</button><button class="o" data-a="hd" data-id="${x.id}">删除</button></div>`).join(''):'<p class="m">暂无记录</p>'}
+document.addEventListener('click',async e=>{const b=e.target.closest('button[data-a]');if(!b)return;const a=b.dataset.a,id=b.dataset.id;
+  if(a==='open')await openDb(id);
+  else if(a==='sf')await shareFont(id);
+  else if(a==='df'){const r=await get('fonts',id),used=(await all('chars')).some(c=>c.fid===id);used?await put('fonts',{...r,fav:false}):await del('fonts',id);if(cur&&cur.id===id)cur.fav=false;renderFav()}
+  else if(a==='ho'){if(!await openDb(id))toast('该字体未收藏，没有保存文件，请点「添加字体」重新选择：'+b.dataset.f)}
+  else if(a==='hd'){localStorage.setItem('hist',JSON.stringify(JSON.parse(localStorage.getItem('hist')||'[]').filter(x=>x.id!==id)));renderHist()}});
+$('#hclr').onclick=()=>{localStorage.removeItem('hist');renderHist()};
+// ---- settings
+['#FFC0CB','#FF8FA3','#FFB347','#FFE066','#A8E6A3','#9AD0F5','#C3A6F0','#D9D9D9'].forEach(c=>{const b=document.createElement('button');b.className='sw';b.style.background=c;b.onclick=()=>theme(c);$('#sws').appendChild(b)});
+$('#cc').oninput=e=>theme(e.target.value);$('#cdef').onclick=()=>theme('#FFC0CB');
+$('#sz').value=st.size;$('#sz').onchange=e=>{st.size=+e.target.value;sv()};$('#tp').checked=st.tp;$('#tp').onchange=e=>{st.tp=e.target.checked;sv()};
+theme(st.c);$('#ov').hidden=true;$('#toast').hidden=true;
+all('chars').then(cs=>cs.forEach(c=>FAV.add(c.k))).catch(()=>{});
+</script></body></html>
